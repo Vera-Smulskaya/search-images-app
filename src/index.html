@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Page title</title>
   <link rel="stylesheet" href="./sass/index.scss" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
+  <link rel="stylesheet" href="./css/styles.css" />
   <script type="module" src="./js/index.js"></script>
 </head>
 
@@ -14,10 +16,11 @@
     <input type="text" name="searchQuery" autocomplete="off" placeholder="Search images..." />
     <button type="submit">Search</button>
   </form>
+
   <div class="gallery">
-    <!-- Картки зображень -->
   </div>
-  <button type="button" class="load-more">Load more</button>
+
+  <button type="button" class="load-more is-hidden">Load more</button>
 </body>
 
 </html>
