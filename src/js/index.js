@@ -57,12 +57,12 @@ function renderMarkup() {
  </a>`;
       }
     )
-    .join();
+    .join('');
 
-  gallery.innerHTML = markup;
+  gallery.insertAdjacentHTML('beforeend', markup);
 }
 
-function onSearchForm(event) {
+async function onSearchForm(event) {
   event.preventDefault();
   query = event.currentTarget.elements.searchQuery.value.trim();
   gallery.innerHTML = '';
@@ -74,44 +74,45 @@ function onSearchForm(event) {
 
   hideLoadMoreBtn();
 
-  fetchImages(query, page, perPage)
-    .then(data => {
-      Notiflix.Notify.info(
-        "We're sorry, but you've reached the end of search results."
-      );
-      if (data.totalHits) {
-        loadedData = data.hits;
-        renderMarkup();
-        simpleLightBox = new SimpleLightbox('.gallery a').refresh();
-        if (shouldShowLoadMoreBtn(data)) {
-          showLoadMoreBtn();
-        }
+  try {
+    const data = await fetchImages(query, 1, perPage);
+    Notiflix.Notify.info(`We found ${data.totalHits} results`);
+    if (data.totalHits) {
+      loadedData = data.hits;
+      renderMarkup();
+      simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+      if (shouldShowLoadMoreBtn(data)) {
+        showLoadMoreBtn();
       }
-    })
-    .catch(error => console.log(error))
-    .finally(() => {
-      loadMoreBtn.disabled = false;
-    });
+    }
+  } catch (error) {
+    Notiflix.Notify.failure(error.message);
+    console.error(error);
+  } finally {
+    loadMoreBtn.disabled = false;
+  }
 }
 
-function onClickLoadMore() {
+async function onClickLoadMore() {
   page += 1;
   simpleLightBox.destroy();
 
-  fetchImages(query, page, perPage)
-    .then(data => {
-      loadedData = [...loadedData, ...data.hits];
-      renderMarkup();
-      simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+  try {
+    const data = await fetchImages(query, page, perPage);
+    loadedData = [...loadedData, ...data.hits];
+    renderMarkup();
+    simpleLightBox = new SimpleLightbox('.gallery a').refresh();
 
-      if (!shouldShowLoadMoreBtn(data)) {
-        hideLoadMoreBtn();
-        Notiflix.Notify.info(
-          "We're sorry, but you've reached the end of search results."
-        );
-      }
-    })
-    .catch(error => console.log(error));
+    if (!shouldShowLoadMoreBtn(data)) {
+      hideLoadMoreBtn();
+      Notiflix.Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+  } catch (error) {
+    Notiflix.Notify.failure(error.message);
+    console.error(error);
+  }
 }
 
 function showLoadMoreBtn() {
