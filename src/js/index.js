@@ -1,6 +1,6 @@
 import { fetchImages } from './pixabay-api';
-import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import SimpleLightbox from 'simplelightbox';
 import Notiflix from 'notiflix';
 
 const searchForm = document.getElementById('search-form');
@@ -8,24 +8,17 @@ const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 const perPage = 40;
 let page = 1;
-let simpleLightBox;
+const simpleLightBox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 let query = '';
-let loadedData = [];
 
 searchForm.addEventListener('submit', onSearchForm);
 loadMoreBtn.addEventListener('click', onClickLoadMore);
 
-function renderMarkup() {
-  if (!loadedData.length) {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-    searchForm.reset();
-    gallery.innerHTML = '';
-    return;
-  }
-
-  const markup = loadedData
+function renderMarkup(data) {
+  const markup = data
     .map(
       ({
         webformatURL,
@@ -66,9 +59,11 @@ async function onSearchForm(event) {
   event.preventDefault();
   query = event.currentTarget.elements.searchQuery.value.trim();
   gallery.innerHTML = '';
+  page = 1;
 
   if (query === '') {
     Notiflix.Notify.failure('The search string cannot be empty.');
+    hideLoadMoreBtn();
     return;
   }
 
@@ -76,14 +71,20 @@ async function onSearchForm(event) {
 
   try {
     const data = await fetchImages(query, 1, perPage);
+
     Notiflix.Notify.info(`We found ${data.totalHits} results`);
     if (data.totalHits) {
-      loadedData = data.hits;
-      renderMarkup();
-      simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+      renderMarkup(data.hits);
+      simpleLightBox.refresh();
       if (shouldShowLoadMoreBtn(data)) {
         showLoadMoreBtn();
       }
+    } else {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      searchForm.reset();
+      gallery.innerHTML = '';
     }
   } catch (error) {
     Notiflix.Notify.failure(error.message);
@@ -95,13 +96,11 @@ async function onSearchForm(event) {
 
 async function onClickLoadMore() {
   page += 1;
-  simpleLightBox.destroy();
 
   try {
     const data = await fetchImages(query, page, perPage);
-    loadedData = [...loadedData, ...data.hits];
-    renderMarkup();
-    simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+    renderMarkup(data.hits);
+    simpleLightBox.refresh();
 
     if (!shouldShowLoadMoreBtn(data)) {
       hideLoadMoreBtn();
