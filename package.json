@@ -1,8 +1,8 @@
 {
-  "name": "parcel-project-template",
+  "name": "search-images-app",
   "version": "2.0.0",
   "description": "",
-  "homepage": "https://Vera-Smulskaya.github.io/goit-js-hw-11",
+  "homepage": "https://Vera-Smulskaya.github.io/search-images-app",
   "scripts": {
     "start": "parcel src/*.html",
     "build": "parcel build src/*.html --public-url /goit-js-hw-11/"
